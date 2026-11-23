@@ -1,4 +1,6 @@
+
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
@@ -9,35 +11,50 @@ const morgan = require('morgan');
 const connectDatabase = require('./config/db');
 
 const app = express();
+
 app.disable('x-powered-by');
 app.use(helmet());
+
+// Allowed frontend domains
 const allowedOrigins = new Set([
-  ...String(process.env.FRONTEND_URL || '').split(','),
-  'https://max-compny-buissnes.vercel.app'
-].map(origin => origin.trim()).filter(Boolean));
+  ...String(process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(origin => origin.trim()),
+
+  'https://max-compny-buissnes.vercel.app',
+  'https://redirect-ajeer-project.vercel.app'
+].filter(Boolean));
+
 app.use(cors({
   origin(origin, callback) {
-    callback(null, !origin || allowedOrigins.has(origin));
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
+
 app.use(express.json({ limit: '200kb' }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-// Cache the connection promise so serverless (Vercel) reuses it between requests
+// Database connection cache for Vercel
 let databasePromise = null;
+
 function ensureDatabase() {
   if (!databasePromise) {
     databasePromise = connectDatabase().catch(error => {
-      databasePromise = null; // allow retry on next request
+      databasePromise = null;
       throw error;
     });
   }
+
   return databasePromise;
 }
 
-// Map mongoose readyState numbers to readable text
+// Database status
 const DB_STATES = {
   0: 'disconnected',
   1: 'connected',
@@ -45,7 +62,6 @@ const DB_STATES = {
   3: 'disconnecting'
 };
 
-// Status handler used by both "/" and "/api"
 async function statusHandler(req, res) {
   try {
     await ensureDatabase();
@@ -53,7 +69,9 @@ async function statusHandler(req, res) {
     console.error('Database connection failed:', error.message);
   }
 
-  const state = DB_STATES[mongoose.connection.readyState] || 'unknown';
+  const state =
+    DB_STATES[mongoose.connection.readyState] || 'unknown';
+
   const isConnected = state === 'connected';
 
   res.status(isConnected ? 200 : 503).json({
@@ -68,11 +86,11 @@ async function statusHandler(req, res) {
   });
 }
 
-// Status routes (must be before the public router mounted on "/")
+// Status routes
 app.get('/', statusHandler);
 app.get('/api', statusHandler);
 
-// Make sure the database is ready before any other route runs
+// Ensure database connection before other routes
 app.use(async (req, res, next) => {
   try {
     await ensureDatabase();
@@ -82,22 +100,55 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20 }), require('./routes/auth'));
+// API routes
+app.use(
+  '/api/auth',
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20
+  }),
+  require('./routes/auth')
+);
+
 app.use('/api/permits', require('./routes/permits'));
-app.use('/api/public', rateLimit({ windowMs: 60 * 1000, limit: 60 }), require('./routes/public'));
+
+app.use(
+  '/api/public',
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: 60
+  }),
+  require('./routes/public')
+);
+
 app.use('/', require('./routes/public'));
 
+// Error handler
 app.use((error, req, res, next) => {
   console.error(error);
-  res.status(error.status || 500).json({ error: 'Internal server error' });
+
+  if (error.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      error: 'Origin not allowed by CORS'
+    });
+  }
+
+  res.status(error.status || 500).json({
+    error: 'Internal server error'
+  });
 });
 
-// Local / normal server: start listening. On Vercel the app is exported instead.
+// Local server / Vercel export
 if (require.main === module) {
   ensureDatabase()
     .then(() => {
       const port = Number(process.env.PORT || 5000);
-      app.listen(port, () => console.log(`MAXYY DEV backend running on port ${port}`));
+
+      app.listen(port, () => {
+        console.log(
+          `MAXYY DEV backend running on port ${port}`
+        );
+      });
     })
     .catch(error => {
       console.error('Failed to start server:', error.message);
