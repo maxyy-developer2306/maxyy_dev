@@ -7,7 +7,7 @@ import PermitForm from './pages/PermitForm';
 import PermitDetails from './pages/PermitDetails';
 import Login from './pages/Login';
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = import.meta.env.DEV ? import.meta.env.VITE_API_URL : '';
 axios.defaults.withCredentials = true;
 
 function ProtectedLayout() {

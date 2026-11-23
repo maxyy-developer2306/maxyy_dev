@@ -11,8 +11,14 @@ const connectDatabase = require('./config/db');
 const app = express();
 app.disable('x-powered-by');
 app.use(helmet());
+const allowedOrigins = new Set([
+  ...String(process.env.FRONTEND_URL || '').split(','),
+  'https://max-compny-buissnes.vercel.app'
+].map(origin => origin.trim()).filter(Boolean));
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin(origin, callback) {
+    callback(null, !origin || allowedOrigins.has(origin));
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '200kb' }));
