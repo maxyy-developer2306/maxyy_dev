@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 
 const permitSchema = new mongoose.Schema({
-  permitNumber: { type: String, required: true, trim: true, unique: true, index: true },
+  permitNumber: { type: String, required: true, trim: true },
   permitType: { type: String, trim: true, default: '' },
   issueDate: { type: Date, default: null },
   expiryDate: { type: Date, default: null },

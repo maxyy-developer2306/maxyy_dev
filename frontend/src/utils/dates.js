@@ -15,18 +15,31 @@ export function formatDisplayDate(value) {
 }
 
 export function parseDateInput(value) {
-  const input = value.trim();
+  const input = value.trim()
+    .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x660))
+    .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x6f0))
+    .replace(/\s+/g, '');
   const dayFirst = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(input);
   const yearFirst = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(input);
   if (!dayFirst && !yearFirst) return null;
 
-  const [, first, second, third] = dayFirst || yearFirst;
-  const [dayText, monthText, yearText] = dayFirst
-    ? [first, second, third]
-    : [third, second, first];
-  const day = Number(dayText);
-  const month = Number(monthText);
-  const year = Number(yearText);
+  let day;
+  let month;
+  let year;
+  if (yearFirst) {
+    [, year, month, day] = yearFirst.map(Number);
+  } else {
+    const [, firstText, secondText, yearText] = dayFirst;
+    const first = Number(firstText);
+    const second = Number(secondText);
+    day = first;
+    month = second;
+    year = Number(yearText);
+    if (first <= 12 && second > 12) {
+      month = first;
+      day = second;
+    }
+  }
   if (year < 1 || year > 9999) return null;
 
   const date = new Date(0);

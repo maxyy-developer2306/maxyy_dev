@@ -55,7 +55,7 @@ export default function PermitForm() {
 
       const parsedDate = parseDateInput(value);
       if (!parsedDate) {
-        setError(`${label} must be a valid date, e.g. 25/12/2026, 25-12-2026, or 2026-12-25.`);
+        setError(`${label} must be a valid date. Use / or - as the separator, e.g. 25-12-2026.`);
         return;
       }
       payload[field] = parsedDate;

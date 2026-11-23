@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
     const permit = await Permit.create({ ...req.body, qrToken: crypto.randomBytes(32).toString('hex') });
     res.status(201).json({ permit });
   } catch (error) {
-    if (error.code === 11000) return res.status(409).json({ error: 'Permit Number or QR token already exists' });
+    if (error.code === 11000) return res.status(409).json({ error: 'QR token already exists' });
     if (error.name === 'ValidationError') return res.status(400).json({ error: error.message });
     throw error;
   }
