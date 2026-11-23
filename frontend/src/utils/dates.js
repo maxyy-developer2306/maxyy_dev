@@ -15,10 +15,15 @@ export function formatDisplayDate(value) {
 }
 
 export function parseDateInput(value) {
-  const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value.trim());
-  if (!match) return null;
+  const input = value.trim();
+  const dayFirst = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(input);
+  const yearFirst = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(input);
+  if (!dayFirst && !yearFirst) return null;
 
-  const [, dayText, monthText, yearText] = match;
+  const [, first, second, third] = dayFirst || yearFirst;
+  const [dayText, monthText, yearText] = dayFirst
+    ? [first, second, third]
+    : [third, second, first];
   const day = Number(dayText);
   const month = Number(monthText);
   const year = Number(yearText);

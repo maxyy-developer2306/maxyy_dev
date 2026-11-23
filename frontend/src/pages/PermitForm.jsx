@@ -55,7 +55,7 @@ export default function PermitForm() {
 
       const parsedDate = parseDateInput(value);
       if (!parsedDate) {
-        setError(`${label} must be a valid date in DD/MM/YYYY format.`);
+        setError(`${label} must be a valid date, e.g. 25/12/2026, 25-12-2026, or 2026-12-25.`);
         return;
       }
       payload[field] = parsedDate;
@@ -82,13 +82,13 @@ export default function PermitForm() {
         <div className="form-grid">
           <label>Permit Number <span>*</span><input name="permitNumber" value={form.permitNumber} onChange={update} required /></label>
           <label>Permit Type<input name="permitType" value={form.permitType} onChange={update} /></label>
-          <label>Issue Date<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="issueDate" value={form.issueDate} onChange={update} /></label>
-          <label>Expiry Date<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="expiryDate" value={form.expiryDate} onChange={update} /></label>
+          <label>Issue Date<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="issueDate" value={form.issueDate} onChange={update} /></label>
+          <label>Expiry Date<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="expiryDate" value={form.expiryDate} onChange={update} /></label>
           <label>Worker Name <span>*</span><input name="workerName" value={form.workerName} onChange={update} required /></label>
           <label>Iqama / ID Number <span>*</span><input name="iqamaNumber" value={form.iqamaNumber} onChange={update} required /></label>
           <label>Nationality<input name="nationality" value={form.nationality} onChange={update} /></label>
           <label>Job Title<input name="jobTitle" value={form.jobTitle} onChange={update} /></label>
-          <label>Date of Birth<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="dateOfBirth" value={form.dateOfBirth} onChange={update} /></label>
+          <label>Date of Birth<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="dateOfBirth" value={form.dateOfBirth} onChange={update} /></label>
           <label>Iqama Mosasa Number<input name="iqamaMosasaNumber" value={form.iqamaMosasaNumber} onChange={update} /></label>
           <label>Establishment Name / اسم المنشأة<input name="establishmentName" value={form.establishmentName} onChange={update} /></label>
           <label>Gender<select name="gender" value={form.gender} onChange={update}><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></label>
