@@ -22,7 +22,7 @@ const allowedOrigins = new Set([
     .map(origin => origin.trim()),
 
   'https://max-compny-buissnes.vercel.app',
-  'https://redirect-ajeer-project.vercel.app'
+  'https://ajeer-qiwa-hrc-verified.vercel.app'
 ].filter(Boolean));
 
 app.use(cors({
