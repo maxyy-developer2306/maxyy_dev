@@ -10,6 +10,12 @@ const empty = {
   dateOfBirth: '', iqamaMosasaNumber: '', establishmentName: '', gender: 'ذكر'
 };
 
+// Shared classes for inputs and selects (GitHub dark style)
+const inputClass =
+  'w-full rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] placeholder-[#6e7681] outline-none transition focus:border-[#3fb950] focus:ring-1 focus:ring-[#3fb950]/40';
+
+const datePlaceholder = 'DD/MM/YYYY or YYYY-MM-DD';
+
 export default function PermitForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,6 +23,7 @@ export default function PermitForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Load existing permit when editing
   useEffect(() => {
     if (!id) return;
     axios.get(`/api/permits/${id}`).then(({ data }) => {
@@ -37,6 +44,7 @@ export default function PermitForm() {
     setForm({ ...form, [event.target.name]: event.target.value });
   }
 
+  // Validate dates, then create or update the permit
   async function save(event) {
     event.preventDefault();
     setError('');
@@ -73,28 +81,96 @@ export default function PermitForm() {
     }
   }
 
+  // Small helper to render one labeled field
+  function Field({ label, name, required, placeholder }) {
+    return (
+      <label className="flex flex-col gap-1.5 text-xs font-medium text-[#8b949e]">
+        <span>
+          {label} {required && <span className="text-[#f85149]">*</span>}
+        </span>
+        <input
+          name={name}
+          value={form[name]}
+          onChange={update}
+          required={required}
+          placeholder={placeholder}
+          className={inputClass}
+        />
+      </label>
+    );
+  }
+
   return (
-    <div className="page">
-      <button className="back-link" onClick={() => navigate(-1)}><ArrowLeft size={18} /> Back</button>
-      <div className="page-heading compact"><div><h1>{id ? 'Edit Permit' : 'Add Permit'}</h1><p>{id ? 'Update permit information. The QR token is preserved.' : 'Create a new worker permit.'}</p></div></div>
-      {error && <div className="alert error">{error}</div>}
-      <form className="form-panel" onSubmit={save}>
-        <div className="form-grid">
-          <label>Permit Number <span>*</span><input name="permitNumber" value={form.permitNumber} onChange={update} required /></label>
-          <label>Permit Type<input name="permitType" value={form.permitType} onChange={update} /></label>
-          <label>Issue Date<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="issueDate" value={form.issueDate} onChange={update} /></label>
-          <label>Expiry Date<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="expiryDate" value={form.expiryDate} onChange={update} /></label>
-          <label>Worker Name <span>*</span><input name="workerName" value={form.workerName} onChange={update} required /></label>
-          <label>Iqama / ID Number <span>*</span><input name="iqamaNumber" value={form.iqamaNumber} onChange={update} required /></label>
-          <label>Nationality<input name="nationality" value={form.nationality} onChange={update} /></label>
-          <label>Job Title<input name="jobTitle" value={form.jobTitle} onChange={update} /></label>
-          <label>Date of Birth<input type="text" inputMode="text" placeholder="DD/MM/YYYY, DD-MM-YYYY, or YYYY-MM-DD" name="dateOfBirth" value={form.dateOfBirth} onChange={update} /></label>
-          <label>Iqama Mosasa Number<input name="iqamaMosasaNumber" value={form.iqamaMosasaNumber} onChange={update} /></label>
-          <label>Establishment Name / اسم المنشأة<input name="establishmentName" value={form.establishmentName} onChange={update} /></label>
-          <label>Gender<select name="gender" value={form.gender} onChange={update}><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></label>
+    <div className="min-h-screen bg-[#0d1117] px-4 py-6 text-[#c9d1d9] sm:px-6">
+      <div className="mx-auto max-w-4xl">
+        {/* Back link */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-[#8b949e] transition hover:text-[#58a6ff]"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+
+        {/* Page heading */}
+        <div className="mb-5 border-b border-[#21262d] pb-5">
+          <h1 className="text-xl font-semibold tracking-tight text-[#e6edf3]">
+            {id ? 'Edit Permit' : 'Add Permit'}
+          </h1>
+          <p className="mt-0.5 text-xs text-[#8b949e]">
+            {id ? 'Update permit information. The QR token is preserved.' : 'Create a new worker permit.'}
+          </p>
         </div>
-        <div className="form-actions"><button type="button" className="secondary" onClick={() => navigate(-1)}>Cancel</button><button className="primary" disabled={loading}><Save size={18} /> {loading ? 'Saving...' : 'Save Permit'}</button></div>
-      </form>
+
+        {/* Error alert */}
+        {error && (
+          <div className="mb-4 rounded-md border border-[#f85149]/40 bg-[#da3633]/10 px-3 py-2 text-sm text-[#ff7b72]">
+            {error}
+          </div>
+        )}
+
+        {/* Form panel */}
+        <form onSubmit={save} className="overflow-hidden rounded-md border border-[#30363d] bg-[#161b22]">
+          <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+            <Field label="Permit Number" name="permitNumber" required />
+            <Field label="Permit Type" name="permitType" />
+            <Field label="Issue Date" name="issueDate" placeholder={datePlaceholder} />
+            <Field label="Expiry Date" name="expiryDate" placeholder={datePlaceholder} />
+            <Field label="Worker Name" name="workerName" required />
+            <Field label="Iqama / ID Number" name="iqamaNumber" required />
+            <Field label="Nationality" name="nationality" />
+            <Field label="Job Title" name="jobTitle" />
+            <Field label="Date of Birth" name="dateOfBirth" placeholder={datePlaceholder} />
+            <Field label="Iqama Mosasa Number" name="iqamaMosasaNumber" />
+            <Field label="Establishment Name / اسم المنشأة" name="establishmentName" />
+
+            <label className="flex flex-col gap-1.5 text-xs font-medium text-[#8b949e]">
+              <span>Gender</span>
+              <select name="gender" value={form.gender} onChange={update} className={inputClass}>
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+              </select>
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2 border-t border-[#30363d] bg-[#0d1117] px-5 py-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-md border border-[#30363d] bg-[#21262d] px-3 py-1.5 text-sm font-medium text-[#c9d1d9] transition hover:border-[#8b949e] hover:bg-[#30363d]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#3fb950]/40 bg-[#238636] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#2ea043] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3fb950]/60 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Save size={16} /> {loading ? 'Saving...' : 'Save Permit'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
