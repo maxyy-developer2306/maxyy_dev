@@ -2,16 +2,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { formatDateInput, parseDateInput } from '../utils/dates';
 
 const empty = {
   permitNumber: '', permitType: '', issueDate: '', expiryDate: '',
   workerName: '', iqamaNumber: '', nationality: '', jobTitle: '',
   dateOfBirth: '', iqamaMosasaNumber: '', establishmentName: '', gender: 'ذكر'
 };
-
-function dateValue(value) {
-  return value ? new Date(value).toISOString().slice(0, 10) : '';
-}
 
 export default function PermitForm() {
   const { id } = useParams();
@@ -26,10 +23,10 @@ export default function PermitForm() {
       const permit = data.permit;
       setForm({
         permitNumber: permit.permitNumber || '', permitType: permit.permitType || '',
-        issueDate: dateValue(permit.issueDate), expiryDate: dateValue(permit.expiryDate),
+        issueDate: formatDateInput(permit.issueDate), expiryDate: formatDateInput(permit.expiryDate),
         workerName: permit.workerName || '', iqamaNumber: permit.iqamaNumber || '',
         nationality: permit.nationality || '', jobTitle: permit.jobTitle || '',
-        dateOfBirth: dateValue(permit.dateOfBirth),
+        dateOfBirth: formatDateInput(permit.dateOfBirth),
         iqamaMosasaNumber: permit.iqamaMosasaNumber || '',
         establishmentName: permit.establishmentName || '', gender: permit.gender || 'ذكر'
       });
@@ -43,9 +40,29 @@ export default function PermitForm() {
   async function save(event) {
     event.preventDefault();
     setError('');
+
+    const payload = { ...form };
+    for (const [field, label] of [
+      ['issueDate', 'Issue Date'],
+      ['expiryDate', 'Expiry Date'],
+      ['dateOfBirth', 'Date of Birth']
+    ]) {
+      const value = form[field].trim();
+      if (!value) {
+        payload[field] = null;
+        continue;
+      }
+
+      const parsedDate = parseDateInput(value);
+      if (!parsedDate) {
+        setError(`${label} must be a valid date in DD/MM/YYYY format.`);
+        return;
+      }
+      payload[field] = parsedDate;
+    }
+
     setLoading(true);
     try {
-      const payload = { ...form };
       if (id) await axios.put(`/api/permits/${id}`, payload);
       else await axios.post('/api/permits', payload);
       navigate('/');
@@ -65,13 +82,13 @@ export default function PermitForm() {
         <div className="form-grid">
           <label>Permit Number <span>*</span><input name="permitNumber" value={form.permitNumber} onChange={update} required /></label>
           <label>Permit Type<input name="permitType" value={form.permitType} onChange={update} /></label>
-          <label>Issue Date<input type="date" name="issueDate" value={form.issueDate} onChange={update} /></label>
-          <label>Expiry Date<input type="date" name="expiryDate" value={form.expiryDate} onChange={update} /></label>
+          <label>Issue Date<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="issueDate" value={form.issueDate} onChange={update} /></label>
+          <label>Expiry Date<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="expiryDate" value={form.expiryDate} onChange={update} /></label>
           <label>Worker Name <span>*</span><input name="workerName" value={form.workerName} onChange={update} required /></label>
           <label>Iqama / ID Number <span>*</span><input name="iqamaNumber" value={form.iqamaNumber} onChange={update} required /></label>
           <label>Nationality<input name="nationality" value={form.nationality} onChange={update} /></label>
           <label>Job Title<input name="jobTitle" value={form.jobTitle} onChange={update} /></label>
-          <label>Date of Birth<input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={update} /></label>
+          <label>Date of Birth<input type="text" inputMode="numeric" maxLength={10} placeholder="DD/MM/YYYY" name="dateOfBirth" value={form.dateOfBirth} onChange={update} /></label>
           <label>Iqama Mosasa Number<input name="iqamaMosasaNumber" value={form.iqamaMosasaNumber} onChange={update} /></label>
           <label>Establishment Name / اسم المنشأة<input name="establishmentName" value={form.establishmentName} onChange={update} /></label>
           <label>Gender<select name="gender" value={form.gender} onChange={update}><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></label>

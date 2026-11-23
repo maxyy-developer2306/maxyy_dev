@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Copy, Download, Pencil } from 'lucide-react';
-
-function displayDate(value) {
-  return value ? new Date(value).toLocaleDateString() : '-';
-}
+import { formatDisplayDate } from '../utils/dates';
 
 export default function PermitDetails() {
   const { id } = useParams();
@@ -45,13 +42,13 @@ export default function PermitDetails() {
           <div className="details-heading"><div><h1>Permit Details</h1><p>{permit.permitNumber}</p></div><span className={`status ${permit.status}`}>{permit.status}</span></div>
           <dl className="details-grid">
             <div><dt>Permit Type</dt><dd>{permit.permitType || '-'}</dd></div>
-            <div><dt>Issue Date</dt><dd>{displayDate(permit.issueDate)}</dd></div>
-            <div><dt>Expiry Date</dt><dd>{displayDate(permit.expiryDate)}</dd></div>
+            <div><dt>Issue Date</dt><dd>{formatDisplayDate(permit.issueDate)}</dd></div>
+            <div><dt>Expiry Date</dt><dd>{formatDisplayDate(permit.expiryDate)}</dd></div>
             <div><dt>Worker Name</dt><dd>{permit.workerName}</dd></div>
             <div><dt>Iqama / ID Number</dt><dd>{permit.iqamaNumber}</dd></div>
             <div><dt>Nationality</dt><dd>{permit.nationality || '-'}</dd></div>
             <div><dt>Job Title</dt><dd>{permit.jobTitle || '-'}</dd></div>
-            <div><dt>Date of Birth</dt><dd>{displayDate(permit.dateOfBirth)}</dd></div>
+            <div><dt>Date of Birth</dt><dd>{formatDisplayDate(permit.dateOfBirth)}</dd></div>
             <div><dt>Iqama Mosasa Number</dt><dd>{permit.iqamaMosasaNumber || '-'}</dd></div>
             <div><dt>Establishment Name / اسم المنشأة</dt><dd>{permit.establishmentName || '-'}</dd></div>
             <div><dt>Gender</dt><dd>{permit.gender}</dd></div>
